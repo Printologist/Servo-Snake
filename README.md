@@ -1,5 +1,10 @@
 # Servo-Snake
-Basic Servo Snake code
+PART LINKS:
+Motors: https://amzn.to/4qYpuP8
+Servo Controller: https://amzn.to/4rsdZzJ
+Arduino: https://amzn.to/4pxMzGN
+
+(I earn commission from affiliate links.)
 /***************************************************
   This is an example for Adafruit 16-channel PWM & Servo driver
   This code will run 8 servos as a robotic snake with forward locomotion.
