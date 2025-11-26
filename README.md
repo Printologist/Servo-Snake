@@ -1,24 +1,14 @@
 # Servo-Snake
 Basic Servo Snake code
 /***************************************************
-  This is an example for our Adafruit 16-channel PWM & Servo driver
+  This is an example for Adafruit 16-channel PWM & Servo driver
   This code will run 8 servos as a robotic snake with forward locomotion.
   Servos 1, 3, 5, and 7 are mounted vertically.
   Servos 2, 4, 6, and 8 are mounted horizontally.
-
-  Pick one up today in the adafruit shop!
-  ------> http://www.adafruit.com/products/815
   
-  These drivers use I2C to communicate, 2 pins are required to  
-  interface.
+  These drivers use I2C to communicate, 2 pins are required to interface.
 
-  Adafruit invests time and resources providing this open source code, 
-  please support Adafruit and open-source hardware by purchasing 
-  products from Adafruit!
-
-  Written by Limor Fried/Ladyada for Adafruit Industries.  
-  BSD license, all text above must be included in any redistribution
- ****************************************************/
+****************************************************/
 
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
