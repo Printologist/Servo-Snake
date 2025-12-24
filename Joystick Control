@@ -1,0 +1,102 @@
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
+
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+
+#define SERVO_FREQ 50
+#define NUM_SERVOS 8
+
+#define SERVO_MIN 400
+#define SERVO_MAX 2600
+#define SERVO_CENTER 1500
+
+#define MAX_STEP 6  // Acceleration smoothing
+#define DEADZONE 30 // Around center
+
+#define J1_X A0
+#define J1_Y A1
+#define J2_X A2
+#define J2_Y A3
+#define BUTTON_PIN 3
+
+uint16_t currentPulse[NUM_SERVOS];
+uint16_t targetPulse[NUM_SERVOS];
+
+// Store joystick center values
+int j1x_center, j1y_center, j2x_center, j2y_center;
+
+uint16_t usToTicks(uint16_t us) {
+  return (uint32_t)us * SERVO_FREQ * 4096 / 1000000;
+}
+
+// Map joystick to servo pulse relative to calibrated center
+uint16_t joystickToPulse(int val, int center) {
+  int offset = val - center;
+  if (abs(offset) < DEADZONE) return SERVO_CENTER; // untouched = 90°
+  int range = (SERVO_MAX - SERVO_MIN) / 2;
+  int pulse = SERVO_CENTER + (offset * range / 512);
+  return constrain(pulse, SERVO_MIN, SERVO_MAX);
+}
+
+// Smooth acceleration
+uint16_t ramp(uint16_t current, uint16_t target) {
+  if (current < target) return min<uint16_t>(current + MAX_STEP, target);
+  if (current > target) return max<uint16_t>(current - MAX_STEP, target);
+  return current;
+}
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+
+  pwm.begin();
+  pwm.setOscillatorFrequency(27000000);
+  pwm.setPWMFreq(SERVO_FREQ);
+
+  delay(500);
+
+  // Center servos one by one
+  for (int i = 0; i < NUM_SERVOS; i++) {
+    currentPulse[i] = SERVO_CENTER;
+    targetPulse[i] = SERVO_CENTER;
+    pwm.setPWM(i, 0, usToTicks(SERVO_CENTER));
+    delay(800);
+  }
+
+  // Calibrate joystick centers
+  j1x_center = analogRead(J1_X);
+  j1y_center = analogRead(J1_Y);
+  j2x_center = analogRead(J2_X);
+  j2y_center = analogRead(J2_Y);
+
+  Serial.println("Servos centered. Joystick centers calibrated.");
+}
+
+void loop() {
+  // Read joysticks
+  int j1x = analogRead(J1_X);
+  int j1y = analogRead(J1_Y);
+  int j2x = analogRead(J2_X);
+  int j2y = analogRead(J2_Y);
+
+  // Map all servos relative to calibrated center
+  targetPulse[0] = joystickToPulse(j1x, j1x_center);
+  targetPulse[1] = joystickToPulse(j1y, j1y_center);
+  targetPulse[2] = joystickToPulse(j2x, j2x_center);
+  targetPulse[3] = joystickToPulse(j2y, j2y_center);
+  targetPulse[4] = joystickToPulse(j1x, j1x_center);
+  targetPulse[5] = joystickToPulse(j2x, j2x_center);
+  targetPulse[6] = joystickToPulse(j1y, j1y_center);
+
+  // Gripper
+  if (digitalRead(BUTTON_PIN) == LOW) targetPulse[7] = 2000;
+  else targetPulse[7] = 1200;
+
+  // Apply ramp
+  for (int i = 0; i < NUM_SERVOS; i++) {
+    currentPulse[i] = ramp(currentPulse[i], targetPulse[i]);
+    pwm.setPWM(i, 0, usToTicks(currentPulse[i]));
+  }
+
+  delay(10);
+}
