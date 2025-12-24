@@ -1,0 +1,56 @@
+#include <Wire.h>
+#include <Adafruit_PWMServoDriver.h>
+
+// Uses default I2C address 0x40
+Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
+
+#define SERVOMIN 150   // Minimum pulse length count (out of 4096)
+#define SERVOMAX 600   // Maximum pulse length count (out of 4096)
+#define SERVO_FREQ 50  // Analog servos run at ~50 Hz
+
+#define NUM_SERVOS 8   // Total number of servos
+
+// Convert degrees to PWM pulse length
+int angleToPulse(int angle) {
+  return map(angle, 0, 180, SERVOMIN, SERVOMAX);
+}
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("Robotic Snake Forward Locomotion");
+
+  pwm.begin();
+  pwm.setOscillatorFrequency(27000000);
+  pwm.setPWMFreq(SERVO_FREQ);
+
+  delay(10);
+
+  // Move all servos to 90 degrees
+  for (int servoNum = 0; servoNum < NUM_SERVOS; servoNum++) {
+    pwm.setPWM(servoNum, 0, angleToPulse(90));
+  }
+
+  delay(1000); // Allow servos to reach center
+}
+
+void loop() {
+  // Forward locomotion wave
+  for (int i = 0; i < 360; i += 2) {
+
+    // Even servos (0, 2, 4, 6)
+    for (int servoNum = 0; servoNum < NUM_SERVOS; servoNum += 2) {
+      int phaseShift = servoNum * 45;
+      int angle = 90 + 5 * sin((i + phaseShift) * PI / 180);
+      pwm.setPWM(servoNum, 0, angleToPulse(angle));
+    }
+
+    // Odd servos (1, 3, 5, 7)
+    for (int servoNum = 1; servoNum < NUM_SERVOS; servoNum += 2) {
+      int phaseShift = servoNum * 45;
+      int angle = 90 + 5 * sin((i + phaseShift + 90) * PI / 180);
+      pwm.setPWM(servoNum, 0, angleToPulse(angle));
+    }
+
+    delay(20); // Controls wave speed
+  }
+}
