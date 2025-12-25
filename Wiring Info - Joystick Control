@@ -1,0 +1,90 @@
+Hardware Wiring (Arduino ↔ PCA9685 ↔ Inputs)
+1. I²C (Arduino ↔ PCA9685)
+
+The PCA9685 is controlled over I²C.
+
+Arduino Pin	PCA9685 Pin	Purpose
+A4	SDA	I²C data
+A5	SCL	I²C clock
+GND	GND	Common ground
+
+⚠️ Arduino ground must be shared with the PCA9685 and joystick ground.
+
+2. Servo Connections (PCA9685)
+
+Servos plug only into the PCA9685, not the Arduino.
+
+Servo Index (Code)	PCA9685 Channel
+Servo 0	Channel 0
+Servo 1	Channel 1
+Servo 2	Channel 2
+Servo 3	Channel 3
+Servo 4	Channel 4
+Servo 5	Channel 5
+Servo 6	Channel 6
+Servo 7 (gripper)	Channel 7
+
+Signal wire → PCA9685 signal pin
+
+Power wire → PCA9685 V+ (external 5–6.6 V supply)
+
+Ground wire → PCA9685 GND
+
+3. External Servo Power (Required)
+
+Servos must NOT be powered from the Arduino.
+
+External PSU	PCA9685
++5–6.6 V	V+
+GND	GND
+
+Also connect PSU GND → Arduino GND (common ground).
+
+4. Joystick Wiring (2× Analog Joysticks)
+
+Each joystick has VRx, VRy, VCC, GND.
+
+Joystick 1
+Arduino Pin	Function
+A0	J1_X
+A1	J1_Y
+5V	VCC
+GND	GND
+Joystick 2
+Arduino Pin	Function
+A2	J2_X
+A3	J2_Y
+5V	VCC
+GND	GND
+5. Button (Gripper Control)
+Arduino Pin	Connection
+D3	Button leg 1
+GND	Button leg 2
+
+Button uses INPUT_PULLUP
+
+Pressed = LOW
+
+No external resistor required
+
+6. Important Notes
+
+PCA9685 OE pin should be left unconnected or tied to GND
+
+Red LED on PCA9685 indicates logic power (normal)
+
+Servo movement depends entirely on external V+ power
+
+On startup, all servos center to 1500 µs (90°) one by one
+
+Pin Summary (Quick Copy)
+Arduino A4 → PCA SDA
+Arduino A5 → PCA SCL
+Arduino GND → PCA GND → PSU GND
+
+Joystick 1: A0, A1
+Joystick 2: A2, A3
+
+Button: D3 → GND
+
+Servos: PCA channels 0–7
